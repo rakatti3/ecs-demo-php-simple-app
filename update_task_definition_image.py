@@ -8,4 +8,4 @@ args = parser.parse_args()
 
 definition = json.load(sys.stdin)['taskDefinition']['containerDefinitions']
 definition[0]['image'] = args.image_uri[0]
-print json.dumps(definition)
+print(json.dumps(definition))
