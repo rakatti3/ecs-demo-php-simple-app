@@ -1,0 +1,50 @@
+image: docker:latest
+
+variables:
+  REPOSITORY_URL: 966240912921.dkr.ecr.us-east-1.amazonaws.com/gecs
+  REGION: us-east-1
+  TASK_DEFINTION_NAME: gecs-task
+  CLUSTER_NAME: GECS
+  SERVICE_NAME: gecs
+
+services:
+- docker:dind
+
+before_script:
+  - apk add --no-cache curl jq python3 py3-pip
+  - pip3 install awscli
+  - $(aws ecr get-login --no-include-email --region "${REGION}")
+  - IMAGE_TAG="$CI_COMMIT_SHORT_SHA"
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - echo "Building image..."
+    - docker build -t $REPOSITORY_URL:latest .
+    - echo "Tagging image..."
+    - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG
+    - echo "Pushing image..."
+    - docker push $REPOSITORY_URL:latest
+    - docker push $REPOSITORY_URL:$IMAGE_TAG
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - echo $REPOSITORY_URL:$IMAGE_TAG
+    - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_DEFINTION_NAME" --region "${REGION}")
+    - NEW_CONTAINER_DEFINTIION=$(echo $TASK_DEFINITION | python3 $CI_PROJECT_DIR/update_task_definition_image.py $REPOSITORY_URL:$IMAGE_TAG)
+    - echo "Registering new container definition..."
+    - aws ecs register-task-definition --region "${REGION}" --family "${TASK_DEFINTION_NAME}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
+    - echo "Stopping the current task"
+    - aws ecs list-tasks --region "${REGION}" --cluster "${CLUSTER_NAME}" --desired-status RUNNING | egrep "task" |  tr "/" " " |  tr "[" " " | awk '{print $2}' |   sed 's/"$//' | xargs -I{} aws ecs --region "${REGION}" stop-task --cluster "${CLUSTER_NAME}" --task {}
+    - echo "Updating the service..."
+    - aws ecs update-service --force-new-deployment --region "${REGION}" --cluster "${CLUSTER_NAME}" --service "${SERVICE_NAME}" --desired-count 1 --task-definition "${TASK_DEFINTION_NAME}"
+    
+  only:
+    - master
