@@ -1,5 +1,7 @@
 {
-
+    "family": "gecs-task",
+    "taskRoleArn": "",
+    "executionRoleArn": "",
     "networkMode": "none",
     "containerDefinitions": [
         {
@@ -44,27 +46,10 @@
                     "readOnly": true
                 }
             ],
-            "linuxParameters": {
-                "capabilities": {
-                    "add": [
-                        ""
-                    ],
-                    "drop": [
-                        ""
-                    ]
-                },
-                "devices": [
-                    {
-                        "hostPath": "",
-                        "containerPath": "",
-                        "permissions": [
-                            "read"
-                        ]
-                    }
-                ],
-                "initProcessEnabled": true
-            },
-
+            "linuxParameters": null,
+            "hostname": "",
+            "user": "",
+            "workingDirectory": "",
             "disableNetworking": true,
             "privileged": true,
             "readonlyRootFilesystem": true,
@@ -117,5 +102,7 @@
     ],
     "requiresCompatibilities": [
         "EC2"
-    ]
+    ],
+    "cpu": "",
+    "memory": ""
 }
