@@ -1,7 +1,5 @@
 {
-    "family": "",
-    "taskRoleArn": "",
-    "executionRoleArn": "",
+
     "networkMode": "none",
     "containerDefinitions": [
         {
@@ -66,9 +64,7 @@
                 ],
                 "initProcessEnabled": true
             },
-            "hostname": "",
-            "user": "",
-            "workingDirectory": "",
+
             "disableNetworking": true,
             "privileged": true,
             "readonlyRootFilesystem": true,
@@ -121,7 +117,5 @@
     ],
     "requiresCompatibilities": [
         "EC2"
-    ],
-    "cpu": "",
-    "memory": ""
+    ]
 }
