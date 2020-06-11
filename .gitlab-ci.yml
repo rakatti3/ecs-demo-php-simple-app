@@ -43,6 +43,7 @@ deploy:
     - aws ecs register-task-definition --region "${REGION}" --family "${TASK_DEFINTION_NAME}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
     - echo "Stopping the current task"
     - aws ecs list-tasks --region "${REGION}" --cluster "${CLUSTER_NAME}" --desired-status RUNNING | egrep "task" |  tr "/" " " |  tr "[" " " | awk '{print $2}' |   sed 's/"$//' | xargs -I{} aws ecs --region "${REGION}" stop-task --cluster "${CLUSTER_NAME}" --task {}
+    - sleep 1m
     - echo "Updating the service..."
     - aws ecs update-service --force-new-deployment --region "${REGION}" --cluster "${CLUSTER_NAME}" --service "${SERVICE_NAME}" --desired-count 1 --task-definition "${TASK_DEFINTION_NAME}"
     
